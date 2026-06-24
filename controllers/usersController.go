@@ -13,19 +13,16 @@ import (
 )
 
 func Signup(c *gin.Context) {
-	var body struct {
-		Email    string
-		Password string
-	}
+	var user model.User
 
-	if c.Bind(&body) != nil {
+	if c.Bind(&user) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to read body.",
 		})
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -34,18 +31,10 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	user := model.User{Email: body.Email, Password: string(hash)}
+	userToInsert := model.User{Email: user.Email, Password: string(hash)}
 
-	connErr := database.DB.Ping()
-	if connErr != nil {
-		fmt.Println("PING ERRRR *********************************************")
-	}
 	query := "Insert into users (email, password) SELECT $1, $2 WHERE not exists (Select 1 from users where email = $1 ) RETURNING email"
-	//query := "SELECT * FROM users"
 	stmt, queryErr := database.DB.Prepare(query)
-	//defer stmt.Close()
-
-	fmt.Println("************* The user *********: ")
 
 	if queryErr != nil {
 		log.Fatalf("Failed to prepare statement: %v", queryErr)
@@ -55,12 +44,10 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	var u model.User
+	insertErr := stmt.QueryRow(userToInsert.Email, userToInsert.Password)
 
-	insertErr := stmt.QueryRow(user.Email, user.Password).Scan(&u.Email)
-
-	if insertErr != nil {
-		fmt.Println("Error is " + insertErr.Error())
+	if insertErr.Err() != nil {
+		fmt.Println("Error is ", insertErr.Err())
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to create user.",
 		})
