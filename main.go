@@ -13,13 +13,10 @@ func init() {
 
 func main() {
 	r := gin.Default()
-	r.GET("/hello", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "Hello World 2",
-		})
-	})
 
 	r.POST("/signup", controllers.Signup)
+
+	r.POST("/login", controllers.Login)
 
 	r.Run()
 }
