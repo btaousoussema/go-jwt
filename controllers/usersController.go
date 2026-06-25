@@ -2,18 +2,18 @@ package controllers
 
 import (
 	"fmt"
-	"go-jwt/internal/database"
-	model "go-jwt/models"
-	"log"
+	"go-jwt/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"go-jwt/services"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 func Signup(c *gin.Context) {
-	var user model.User
+	var user models.User
 
 	if c.Bind(&user) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -31,23 +31,11 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	userToInsert := model.User{Email: user.Email, Password: string(hash)}
+	userToInsert := models.User{Email: user.Email, Password: string(hash)}
+	insertErr := services.InsertUser(userToInsert)
 
-	query := "Insert into users (email, password) SELECT $1, $2 WHERE not exists (Select 1 from users where email = $1 ) RETURNING email"
-	stmt, queryErr := database.DB.Prepare(query)
-
-	if queryErr != nil {
-		log.Fatalf("Failed to prepare statement: %v", queryErr)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Error creating the query statement.",
-		})
-		return
-	}
-
-	insertErr := stmt.QueryRow(userToInsert.Email, userToInsert.Password)
-
-	if insertErr.Err() != nil {
-		fmt.Println("Error is ", insertErr.Err())
+	if insertErr != nil {
+		fmt.Printf("Error is %v", insertErr.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to create user.",
 		})
