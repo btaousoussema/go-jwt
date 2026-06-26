@@ -18,5 +18,7 @@ func main() {
 
 	r.POST("/login", controllers.Login)
 
+	r.POST("/logout", controllers.Logout)
+
 	r.Run()
 }

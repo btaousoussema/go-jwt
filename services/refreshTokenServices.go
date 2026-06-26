@@ -34,3 +34,19 @@ func CreateRefreshToken(user models.User) (models.RefreshToken, error) {
 
 	return refreshToken, nil
 }
+
+func InvalidateTokenForUser(user models.User) {
+
+	query := "Update refresh_token set active = false where user_id = $1"
+	stmt, queryErr := database.DB.Prepare(query)
+
+	if queryErr != nil {
+		log.Printf("Failed to prepare statement: %v", queryErr)
+	}
+
+	row := stmt.QueryRow(user.Id)
+
+	if row.Err() != nil {
+		log.Printf("Failed to delete refresh token for user_id: %v", user.Id)
+	}
+}
