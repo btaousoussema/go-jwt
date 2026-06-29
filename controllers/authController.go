@@ -38,7 +38,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	services.InvalidateTokenForUser(user)
+	services.InvalidateTokenForUser(userFromDb)
 
 	token, err := services.GenerateJwtToken(userFromDb)
 
@@ -81,7 +81,16 @@ func Logout(c *gin.Context) {
 		return
 	}
 
-	services.InvalidateTokenForUser(user)
+	userFromDb, err := services.GetUser(user.Email)
+
+	if err != nil {
+		fmt.Println("Invalid user.")
+		c.SetCookie("refreshToken", "", 0, "/", "", false, true)
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
+
+	services.InvalidateTokenForUser(userFromDb)
 
 	c.SetCookie("refreshToken", "", 0, "/", "", false, true)
 

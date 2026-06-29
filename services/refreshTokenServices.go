@@ -37,8 +37,10 @@ func CreateRefreshToken(user models.User) (models.RefreshToken, error) {
 
 func InvalidateTokenForUser(user models.User) {
 
-	query := "Update refresh_token set active = false where user_id = $1"
+	query := "UPDATE refresh_token SET active = false WHERE user_id = $1"
 	stmt, queryErr := database.DB.Prepare(query)
+
+	log.Printf("Invalidating user id : %v", user.Id)
 
 	if queryErr != nil {
 		log.Printf("Failed to prepare statement: %v", queryErr)
