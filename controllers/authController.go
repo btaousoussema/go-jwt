@@ -63,34 +63,20 @@ func Login(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
+	user, exists := c.Get("user")
 
-	var user models.User
-
-	if c.Bind(&user) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to read body.",
-		})
-		return
-	}
-
-	userClaims := services.ValidateJwtToken(user)
-
-	if userClaims.RegisteredClaims.Valid() != nil {
-		fmt.Println("Invalid credentials.")
-		c.JSON(http.StatusOK, gin.H{})
-		return
-	}
-
-	userFromDb, err := services.GetUser(user.Email)
-
-	if err != nil {
-		fmt.Println("Invalid user.")
+	if !exists {
+		println("The user is not set.")
 		c.SetCookie("refreshToken", "", 0, "/", "", false, true)
 		c.JSON(http.StatusOK, gin.H{})
 		return
 	}
 
-	services.InvalidateTokenForUser(userFromDb)
+	validatedUser := user.(models.User)
+
+	fmt.Printf("The user from middleware :%v ", validatedUser)
+
+	services.InvalidateTokenForUser(validatedUser)
 
 	c.SetCookie("refreshToken", "", 0, "/", "", false, true)
 

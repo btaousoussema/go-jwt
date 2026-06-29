@@ -3,6 +3,7 @@ package services
 import (
 	"go-jwt/models"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -17,12 +18,13 @@ type UserClaims struct {
 func GenerateJwtToken(user models.User) (string, error) {
 	var jwtKey = []byte("your_super_secret_key_here")
 
+	id := strconv.FormatUint(uint64(user.Id), 10)
 	claims := UserClaims{
-		Id:    string(user.Id),
+		Id:    id,
 		Email: user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "go-jwt",
-			Subject:   string(user.Id),
+			Subject:   id,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(5 * time.Minute)),
 		},
 	}

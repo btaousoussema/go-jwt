@@ -3,6 +3,7 @@ package main
 import (
 	"go-jwt/controllers"
 	"go-jwt/internal/database"
+	"go-jwt/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +19,7 @@ func main() {
 
 	r.POST("/login", controllers.Login)
 
-	r.POST("/logout", controllers.Logout)
+	r.POST("/logout", middleware.ValidateAuth, controllers.Logout)
 
 	r.Run()
 }
