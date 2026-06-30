@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"go-jwt/models"
 	"go-jwt/services"
 	"net/http"
@@ -73,9 +72,6 @@ func Logout(c *gin.Context) {
 	}
 
 	validatedUser := user.(models.User)
-
-	fmt.Printf("The user from middleware :%v ", validatedUser)
-
 	services.InvalidateTokenForUser(validatedUser)
 
 	c.SetCookie("refreshToken", "", 0, "/", "", false, true)

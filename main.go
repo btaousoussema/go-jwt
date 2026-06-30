@@ -21,5 +21,7 @@ func main() {
 
 	r.POST("/logout", middleware.ValidateAuth, controllers.Logout)
 
+	r.GET("/contact", middleware.ValidateAuth, controllers.GetContacts)
+
 	r.Run()
 }
